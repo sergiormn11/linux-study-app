@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terminal de Estudio · Linux</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ==================== BARRA SUPERIOR (estilo prompt de shell) ==================== -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="prompt-dot prompt-dot--red"></span>
+      <span class="prompt-dot prompt-dot--amber"></span>
+      <span class="prompt-dot prompt-dot--green"></span>
+      <span class="topbar__title"><span class="topbar__user">estudiante</span><span class="topbar__at">@</span><span class="topbar__host">linux</span><span class="topbar__path">:~/apuntes</span><span class="topbar__cursor">▊</span></span>
+    </div>
+
+    <div class="topbar__actions">
+      <div class="search">
+        <input type="search" id="searchInput" class="search__input" placeholder="Buscar apuntes…" aria-label="Buscar apuntes">
+      </div>
+      <button class="btn btn--ghost" id="restoreBtn" title="Restaurar la guía original">Restaurar guía</button>
+      <button class="btn btn--ghost" id="importBtn" title="Importar JSON">Importar</button>
+      <button class="btn btn--ghost" id="exportBtn" title="Exportar JSON">Exportar</button>
+      <button class="btn btn--icon" id="themeToggle" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">◐</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- ==================== BARRA LATERAL (módulos) ==================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__progress">
+        <div class="sidebar__progress-head">
+          <span>Progreso del curso</span>
+          <span id="progressLabel">0%</span>
+        </div>
+        <div class="progressbar"><div class="progressbar__fill" id="progressFill"></div></div>
+      </div>
+
+      <nav class="modules" id="moduleList" aria-label="Módulos del curso">
+        <!-- Los módulos se inyectan con JavaScript -->
+      </nav>
+
+      <div class="sidebar__filters">
+        <label class="field-label" for="difficultyFilter">Filtrar por dificultad</label>
+        <select id="difficultyFilter" class="select">
+          <option value="all">Todas</option>
+          <option value="basico">Básico</option>
+          <option value="intermedio">Intermedio</option>
+          <option value="avanzado">Avanzado</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <main class="content" id="content">
+      <div class="content__header">
+        <div>
+          <p class="eyebrow" id="moduleEyebrow">Módulo</p>
+          <h1 class="content__title" id="moduleTitle">Selecciona un módulo</h1>
+        </div>
+        <div class="content__header-actions">
+          <label class="checkbox" id="completedWrap" hidden>
+            <input type="checkbox" id="completedCheck">
+            <span>Marcar tema como completado</span>
+          </label>
+          <button class="btn btn--primary" id="addNoteBtn" hidden>+ Añadir apunte</button>
+        </div>
+      </div>
+
+      <div class="notes" id="notesContainer">
+        <!-- Las tarjetas de apuntes se inyectan con JavaScript -->
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODAL: AÑADIR / EDITAR APUNTE ==================== -->
+  <div class="modal" id="noteModal" hidden>
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal__head">
+        <h2 id="modalTitle">Nuevo apunte</h2>
+        <button class="btn btn--icon" data-close-modal aria-label="Cerrar">✕</button>
+      </div>
+
+      <form id="noteForm" class="form">
+        <input type="hidden" id="noteId">
+
+        <label class="field-label" for="noteType">Tipo de apunte</label>
+        <select id="noteType" class="select">
+          <option value="teoria">Teoría / explicación</option>
+          <option value="comando">Comando</option>
+          <option value="ejemplo">Ejemplo</option>
+          <option value="error">Error común</option>
+          <option value="tip">Consejo (tip)</option>
+          <option value="pregunta">Pregunta teórica</option>
+          <option value="ejercicio">Ejercicio práctico</option>
+        </select>
+
+        <label class="field-label" for="noteTitle">Título</label>
+        <input type="text" id="noteTitle" class="input" placeholder="Ej. Listar archivos con ls -l" required>
+
+        <label class="field-label" for="noteBody">
+          <span id="bodyLabel">Contenido</span>
+        </label>
+        <textarea id="noteBody" class="textarea" rows="5" placeholder="Escribe aquí el contenido del apunte…"></textarea>
+
+        <!-- Campo extra: sólo visible para preguntas y ejercicios -->
+        <div id="answerBlock" hidden>
+          <label class="field-label" for="noteAnswer">
+            <span id="answerLabel">Respuesta (oculta hasta pulsar "Mostrar")</span>
+          </label>
+          <textarea id="noteAnswer" class="textarea" rows="4" placeholder="Escribe aquí la respuesta o la solución…"></textarea>
+        </div>
+
+        <label class="field-label" for="noteDifficulty">Dificultad</label>
+        <select id="noteDifficulty" class="select">
+          <option value="basico">Básico</option>
+          <option value="intermedio">Intermedio</option>
+          <option value="avanzado">Avanzado</option>
+        </select>
+
+        <label class="field-label" for="noteTags">Etiquetas (separadas por comas)</label>
+        <input type="text" id="noteTags" class="input" placeholder="permisos, chmod, seguridad">
+
+        <div class="form__actions">
+          <button type="button" class="btn btn--ghost" data-close-modal>Cancelar</button>
+          <button type="submit" class="btn btn--primary" id="saveNoteBtn">Guardar apunte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Aviso emergente (toast) -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
